@@ -7,90 +7,110 @@
     <!-- Load the 'marked' library for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* --- Global Styles --- */
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow-x: hidden;
-            font-family: 'Arial', sans-serif;
-            background-color: #050510;
-            color: white;
-        }
+/* --- Global Theme --- */
+:root {
+    --primary: #6c5ce7;
+    --accent: #a29bfe;
+    --bg-dark: #0f0c29;
+    --text-light: #ffffff;
+    --card-bg: rgba(255, 255, 255, 0.1);
+}
 
-        /* --- Space Background & Particles --- */
-        #space-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
+/* --- Global Styles --- */
+body, html {
+    margin: 0;
+    padding: 0;
     height: 100%;
+    overflow-x: hidden;
+    font-family: Arial, sans-serif;
+    background:
+        radial-gradient(circle at top, #1b1445 0%, var(--bg-dark) 45%, #050510 100%);
+    color: var(--text-light);
+}
+
+/* --- Space Background --- */
+#space-background {
+    position: fixed;
+    inset: 0;
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    primary: #6c5ce7;
-    accent: #a29bfe;
-    bg-dark: #0f0c29;
-    text-light: #ffffff;
-    card-bg: rgba(255, 255, 255, 0.1);
 }
 
-        .particle {
-            position: absolute;
-            top: -50px;
-            opacity: 0.8;
-            pointer-events: none;
-            animation: zoom linear infinite;
-        }
+/* --- Particles --- */
+.particle {
+    position: absolute;
+    top: -20vh;
+    opacity: 0;
+    pointer-events: none;
+    animation: streak linear infinite;
+}
 
-        @keyframes zoom {
-            0% {
-                transform: translateY(0) scale(0.1);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(110vh) scale(1.5);
-                opacity: 0;
-            }
-        }
+/* Vertical glowing lines */
+.star {
+    width: 2px;
+    border-radius: 999px;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        var(--accent),
+        white,
+        transparent
+    );
 
-        .star {
-            background: white;
-            border-radius: 2px;
-            box-shadow: 0 0 5px white;
-        }
+    box-shadow:
+        0 0 6px var(--accent),
+        0 0 12px var(--primary);
+}
 
-        .letter {
-            color: #aaddff;
-            font-weight: bold;
-            font-size: 1.5rem;
-            text-shadow: 0 0 8px #aaddff;
-            font-family: 'Courier New', monospace;
-        }
+/* Floating letters */
+.letter {
+    color: var(--accent);
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--accent);
+    font-family: 'Courier New', monospace;
+}
 
-        /* --- Content Container --- */
-        .content {
-            position: relative;
-            z-index: 1;
-            padding: 40px;
-            max-width: 900px;
-            margin: 50px auto;
-            background: rgba(0, 0, 0, 0.65);
-            border-radius: 15px;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+/* Diagonal movement */
+@keyframes streak {
+    0% {
+        transform: translate(20vw, -20vh) rotate(20deg);
+        opacity: 0;
+    }
 
-        h1 {
-            text-align: center;
-            margin-top: 0;
-            color: #ffd700; /* Gold for the Lion King vibe */
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
+    10% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-120vw, 120vh) rotate(20deg);
+        opacity: 0;
+    }
+}
+
+/* --- Content Container --- */
+.content {
+    position: relative;
+    z-index: 1;
+    padding: 40px;
+    max-width: 900px;
+    margin: 50px auto;
+    background: var(--card-bg);
+    border-radius: 18px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+
+    box-shadow:
+        0 8px 40px rgba(0,0,0,0.4),
+        0 0 20px rgba(108, 92, 231, 0.15);
+}
+
+h1 {
+    text-align: center;
+    margin-top: 0;
+    color: white;
+    text-shadow: 0 0 12px var(--accent);
+}
 
         /* --- Markdown Visualizer Styles --- */
         .visualizer-container {
@@ -230,35 +250,44 @@ Have fun!"></textarea>
         const container = document.getElementById('space-background');
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
+function createParticle() {
+    const particle = document.createElement('div');
+    particle.classList.add('particle');
 
-            // 70% chance of star, 30% letter
-            const isStar = Math.random() > 0.3;
+    // 80% stars, 20% letters
+    const isStar = Math.random() > 0.2;
 
-            if (isStar) {
-                particle.classList.add('star');
-                const length = Math.random() * 50 + 10; 
-                particle.style.width = length + 'px';
-                particle.style.height = '2px';
-            } else {
-                particle.classList.add('letter');
-                particle.innerText = letters.charAt(Math.floor(Math.random() * letters.length));
-                particle.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
-            }
+    if (isStar) {
+        particle.classList.add('star');
 
-            particle.style.left = Math.random() * 100 + '%';
-            
-            // Speed between 1s and 4s
-            const duration = Math.random() * 10 + 8; 
-            particle.style.animationDuration = duration + 's';
-            
-            // Random delay so they don't all start at once
-            particle.style.animationDelay = Math.random() * 2 + 's';
+        // Vertical line height
+        const height = Math.random() * 80 + 20;
 
-            container.appendChild(particle);
-        }
+        particle.style.height = height + 'px';
+    } else {
+        particle.classList.add('letter');
+
+        particle.innerText =
+            letters.charAt(Math.floor(Math.random() * letters.length));
+
+        particle.style.fontSize =
+            (Math.random() * 1.2 + 0.8) + 'rem';
+    }
+
+    particle.style.left = Math.random() * 120 + 'vw';
+
+    // Random speeds
+    const duration = Math.random() * 8 + 6;
+    particle.style.animationDuration = duration + 's';
+
+    // Random delays
+    particle.style.animationDelay = Math.random() * 8 + 's';
+
+    // Random opacity
+    particle.style.opacity = Math.random() * 0.7 + 0.2;
+
+    container.appendChild(particle);
+}
 
         for (let i = 0; i < particleCount; i++) {
             createParticle();

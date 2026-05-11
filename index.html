@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animalandia Warp-Speed Editor</title>
+    <!-- Load the Marked library for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* --- GLOBAL STYLES --- */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+            font-family: 'Arial', sans-serif;
+            background-color: #050510; /* Deep space */
+            color: white;
+        }
+
+        /* --- SPACE BACKGROUND & PARTICLES --- */
+        #space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            top: -50px;
+            opacity: 0.8;
+            pointer-events: none;
+            animation: zoom linear infinite;
+        }
+
+        @keyframes zoom {
+            0% {
+                transform: translateY(0) scale(0.1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .star {
+            background: white;
+            border-radius: 2px;
+            box-shadow: 0 0 5px white;
+        }
+
+        .letter {
+            color: #aaddff;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-shadow: 0 0 8px #aaddff;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* --- MAIN EDITOR CONTAINER (Glassmorphism) --- */
+        .editor-container {
+            position: relative;
+            z-index: 10;
+            padding: 40px 20px;
+            max-width: 1000px;
+            margin: 50px auto;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.75); /* Darker glass for readability */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #aaddff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* --- INPUT AREA --- */
+        textarea {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            line-height: 1.6;
+        }
+        
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- OUTPUT AREA --- */
+        #output {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            line-height: 1.6;
+            color: #eee;
+        }
+
+        /* Markdown Styling Overrides for the Output */
+        #output h1, #output h2, #output h3 {
+            color: #aaddff;
+            border-bottom: 1px solid rgba(170, 221, 255, 0.3);
+            padding-bottom: 5px;
+        }
+        #output code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #ffcc00;
+        }
+        #output blockquote {
+            border-left: 4px solid #aaddff;
+            margin: 0;
+            padding-left: 15px;
+            color: #ccc;
+            font-style: italic;
+        }
+        #output ul, #output ol {
+            padding-left: 20px;
+        }
+
+        /* Responsive adjustment */
+        @media (max-width: 768px) {
+            .editor-container {
+                flex-direction: column;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- The Space Background -->
+    <div id="space-background"></div>
+
+    <!-- The Editor Interface -->
+    <div class="editor-container">
+        <!-- Left Panel: Input -->
+        <div class="panel">
+            <div class="panel-header">✍️ Write Your Story (Markdown)</div>
+            <textarea id="input" placeholder="Type here... 
+Try **bold**, _italics_, or # Headers!
+Example:
+**Lupus** the wolf is sneaky.
+> The Snow Leopard watched from the cliffs."></textarea>
+        </div>
+
+        <!-- Right Panel: Preview -->
+        <div class="panel">
+            <div class="panel-header">👁️ Live Preview</div>
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. MARKDOWN LOGIC ---
+        const inputArea = document.getElementById('input');
+        const outputArea = document.getElementById('output');
+
+        function renderMarkdown() {
+            const rawText = inputArea.value;
+            // Convert Markdown to HTML
+            const htmlContent = marked.parse(rawText);
+            outputArea.innerHTML = htmlContent;
+        }
+
+        // Listen for typing events
+        inputArea.addEventListener('input', renderMarkdown);
+
+        // --- 2. SPACE BACKGROUND LOGIC ---
+        const particleCount = 150; // Increased slightly for more density
+        const container = document.getElementById('space-background');
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+
+            // 70% Stars, 30% Letters
+            const isStar = Math.random() > 0.3;
+
+            if (isStar) {
+                particle.classList.add('star');
+                const length = Math.random() * 60 + 10; 
+                particle.style.width = length + 'px';
+                particle.style.height = '2px';
+            } else {
+                particle.classList.add('letter');
+                particle.innerText = letters.charAt(Math.floor(Math.random() * letters.length));
+                particle.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+            }
+
+            // Random Position
+            particle.style.left = Math.random() * 100 + '%';
+
+            // Random Speed (1s to 4s)
+            const duration = Math.random() * 3 + 1;
+            particle.style.animationDuration = duration + 's';
+
+            // Random Delay
+            particle.style.animationDelay = Math.random() * 5 + 's';
+
+            container.appendChild(particle);
+        }
+
+        // Initialize Particles
+        for (let i = 0; i < particleCount; i++) {
+            createParticle();
+        }
+    </script>
+</body>
+</html>

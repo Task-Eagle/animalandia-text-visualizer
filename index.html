@@ -261,7 +261,7 @@ function createParticle() {
         particle.classList.add('star');
 
         // Vertical line height
-        const height = Math.random() * 80 + 20;
+        const height = Math.random() * 100 + 20;
 
         particle.style.height = height + 'px';
     } else {
@@ -274,10 +274,10 @@ function createParticle() {
             (Math.random() * 1.2 + 0.8) + 'rem';
     }
 
-    particle.style.left = Math.random() * 120 + 'vw';
+    particle.style.left = Math.random() * 220 + 'vw';
 
     // Random speeds
-    const duration = Math.random() * 8 + 6;
+    const duration = Math.random() * 10 + 6;
     particle.style.animationDuration = duration + 's';
 
     // Random delays

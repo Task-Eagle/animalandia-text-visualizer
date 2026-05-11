@@ -8,40 +8,34 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         /* --- Global Styles --- */
-        html, body {
+        body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            width: 100%;
             overflow-x: hidden;
             font-family: 'Arial', sans-serif;
-            /* Fallback color in case the background div fails */
-            background-color: #050510; 
+            background-color: #050510;
             color: white;
-            /* Ensure no scrollbars from the body itself */
-            overflow-y: auto;
         }
 
         /* --- Space Background & Particles --- */
         #space-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1; /* Behind everything */
-            overflow: hidden;
-            background-color: #050510; /* Explicit fallback */
-        }
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
 
         .particle {
             position: absolute;
-            top: -50px; /* Start slightly above screen */
-            opacity: 0; /* Start invisible for smooth fade-in */
+            top: -50px;
+            opacity: 0.8;
             pointer-events: none;
             animation: zoom linear infinite;
-            /* Ensure they are visible */
-            will-change: transform, opacity;
         }
 
         @keyframes zoom {
@@ -75,11 +69,10 @@
         /* --- Content Container --- */
         .content {
             position: relative;
-            z-index: 1; /* Must be higher than -1 */
+            z-index: 1;
             padding: 40px;
             max-width: 900px;
             margin: 50px auto;
-            /* Glass effect */
             background: rgba(0, 0, 0, 0.65);
             border-radius: 15px;
             backdrop-filter: blur(8px);
@@ -90,7 +83,7 @@
         h1 {
             text-align: center;
             margin-top: 0;
-            color: #ffd700;
+            color: #ffd700; /* Gold for the Lion King vibe */
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
@@ -127,7 +120,7 @@
             border-radius: 8px;
             color: #fff;
             resize: vertical;
-            box-sizing: hard-box;
+            box-sizing: border-box; /* Ensures padding doesn't break width */
         }
 
         textarea:focus {
@@ -148,6 +141,20 @@
             line-height: 1.6;
         }
 
+        /* Scrollbar styling for the preview */
+        #output::-webkit-scrollbar {
+            width: 8px;
+        }
+        #output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        #output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             .visualizer-container {
                 flex-direction: column;
@@ -167,17 +174,22 @@
             Type Markdown on the left, see the magic on the right.
         </p>
 
+        <!-- The Visualizer Tool -->
         <div class="visualizer-container">
+            <!-- Input Area -->
             <div class="editor-pane">
                 <div class="pane-label">Markdown Input</div>
-                <textarea id="input" placeholder="# Hello World
+                <textarea id="input" placeholder="Try:
+# Hello
 **Bold** and *italic* text.
 
 - Star
 - List
-- Items"></textarea>
+- Items
+Have fun!"></textarea>
             </div>
             
+            <!-- Output Area -->
             <div class="preview-pane">
                 <div class="pane-label">Live Preview</div>
                 <div id="output"></div>
@@ -185,7 +197,7 @@
         </div>
         
         <p style="text-align: center; margin-top: 30px; font-style: italic; opacity: 0.7;">
-            (Keep scrolling... the stars never stop!)
+            Part of Animalandia Workspace Suite
         </p>
     </div>
 
@@ -196,18 +208,17 @@
 
         function renderMarkdown() {
             const rawText = inputArea.value;
-            // Check if marked is loaded
-            if (typeof marked !== 'undefined') {
-                const htmlContent = marked.parse(rawText);
-                outputArea.innerHTML = htmlContent;
-            } else {
-                outputArea.innerHTML = "<p style='color:red'>Error: Marked library not loaded.</p>";
-            }
+            // marked.parse converts Markdown to HTML
+            const htmlContent = marked.parse(rawText);
+            outputArea.innerHTML = htmlContent;
         }
 
-        // Initial render
+        // Initial render (empty)
         renderMarkdown();
+        
+        // Listen for typing
         inputArea.addEventListener('input', renderMarkdown);
+
 
         // --- Space Background Logic ---
         const particleCount = 100;
@@ -215,9 +226,6 @@
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         function createParticle() {
-            // Safety check: ensure container exists
-            if (!container) return;
-
             const particle = document.createElement('div');
             particle.classList.add('particle');
 
@@ -238,32 +246,17 @@
             particle.style.left = Math.random() * 100 + '%';
             
             // Speed between 1s and 4s
-            const duration = Math.random() * 3 + 1; 
+            const duration = Math.random() * 10 + 8; 
             particle.style.animationDuration = duration + 's';
             
-            // Random delay
-            particle.style.animationDelay = Math.random() * 5 + 's';
+            // Random delay so they don't all start at once
+            particle.style.animationDelay = Math.random() * 2 + 's';
 
             container.appendChild(particle);
         }
 
-        // Wait for DOM to be fully ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                // Small timeout to ensure CSS is parsed
-                setTimeout(() => {
-                    for (let i = 0; i < particleCount; i++) {
-                        createParticle();
-                    }
-                }, 100);
-            });
-        } else {
-            // If already loaded, still wait a tiny bit for CSS
-            setTimeout(() => {
-                for (let i = 0; i < particleCount; i++) {
-                    createParticle();
-                }
-            }, 100);
+        for (let i = 0; i < particleCount; i++) {
+            createParticle();
         }
     </script>
 </body>

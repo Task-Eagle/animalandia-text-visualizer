@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animalandia: Space Markdown Visualizer</title>
+    <!-- Load the 'marked' library for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+/* --- Global Theme --- */
+:root {
+    --primary: #6c5ce7;
+    --accent: #a29bfe;
+    --bg-dark: #0f0c29;
+    --text-light: #ffffff;
+    --card-bg: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Global Styles --- */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+    font-family: Arial, sans-serif;
+    background:
+        radial-gradient(circle at top, #1b1445 0%, var(--bg-dark) 45%, #050510 100%);
+    color: var(--text-light);
+}
+
+/* --- Space Background --- */
+#space-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* --- Particles --- */
+.particle {
+    position: absolute;
+    top: -20vh;
+    opacity: 0;
+    pointer-events: none;
+    animation: streak linear infinite;
+}
+
+/* Vertical glowing lines */
+.star {
+    width: 2px;
+    border-radius: 999px;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        var(--accent),
+        white,
+        transparent
+    );
+
+    box-shadow:
+        0 0 6px var(--accent),
+        0 0 12px var(--primary);
+}
+
+/* Floating letters */
+.letter {
+    color: var(--accent);
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--accent);
+    font-family: 'Courier New', monospace;
+}
+
+/* Diagonal movement */
+@keyframes streak {
+    0% {
+        transform: translate(20vw, -20vh) rotate(20deg);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-120vw, 120vh) rotate(20deg);
+        opacity: 0;
+    }
+}
+
+/* --- Content Container --- */
+.content {
+    position: relative;
+    z-index: 1;
+    padding: 40px;
+    max-width: 900px;
+    margin: 50px auto;
+    background: var(--card-bg);
+    border-radius: 18px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+
+    box-shadow:
+        0 8px 40px rgba(0,0,0,0.4),
+        0 0 20px rgba(108, 92, 231, 0.15);
+}
+
+h1 {
+    text-align: center;
+    margin-top: 0;
+    color: white;
+    text-shadow: 0 0 12px var(--accent);
+}
+
+        /* --- Markdown Visualizer Styles --- */
+        .visualizer-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .editor-pane, .preview-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pane-label {
+            font-size: 0.9rem;
+            color: #aaddff;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            resize: vertical;
+            box-sizing: border-box; /* Ensures padding doesn't break width */
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #aaddff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        #output {
+    width: 100%;
+    height: 300px;
+    padding: 15px;
+
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+
+    box-sizing: border-box;
+    line-height: 1.6;
+
+    /* IMPORTANT FIXES */
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+
+    max-width: 100%;
+}
+        /* Prevent markdown elements from stretching layout */
+#output * {
+    max-width: 100%;
+}
+
+/* Code blocks */
+#output pre {
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Images */
+#output img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Tables */
+#output table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+        /* Scrollbar styling for the preview */
+        #output::-webkit-scrollbar {
+            width: 8px;
+        }
+        #output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        #output::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .visualizer-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- The Space Background -->
+    <div id="space-background"></div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>🦁 Animalandia Text Visualizer</h1>
+        <p style="text-align: center; color: #ccc;">
+            Type Markdown on the left, see the magic on the right.
+        </p>
+
+        <!-- The Visualizer Tool -->
+        <div class="visualizer-container">
+            <!-- Input Area -->
+            <div class="editor-pane">
+                <div class="pane-label">Markdown Input</div>
+                <textarea id="input" placeholder="Try:
+# Hello
+**Bold** and *italic* text.
+
+- Star
+- List
+- Items
+Have fun!"></textarea>
+            </div>
+            
+            <!-- Output Area -->
+            <div class="preview-pane">
+                <div class="pane-label">Live Preview</div>
+                <div id="output"></div>
+            </div>
+        </div>
+        
+        <p style="text-align: center; margin-top: 30px; font-style: italic; opacity: 0.7;">
+            Part of Animalandia Workspace Suite
+        </p>
+    </div>
+
+    <script>
+        // --- Markdown Logic ---
+        const inputArea = document.getElementById('input');
+        const outputArea = document.getElementById('output');
+
+        function renderMarkdown() {
+            const rawText = inputArea.value;
+            // marked.parse converts Markdown to HTML
+            const htmlContent = marked.parse(rawText);
+            outputArea.innerHTML = htmlContent;
+        }
+
+        // Initial render (empty)
+        renderMarkdown();
+        
+        // Listen for typing
+        inputArea.addEventListener('input', renderMarkdown);
+
+
+        // --- Space Background Logic ---
+        const particleCount = 100;
+        const container = document.getElementById('space-background');
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function createParticle() {
+    const particle = document.createElement('div');
+    particle.classList.add('particle');
+
+    // 80% stars, 20% letters
+    const isStar = Math.random() > 0.2;
+
+    if (isStar) {
+        particle.classList.add('star');
+
+        // Vertical line height
+        const height = Math.random() * 100 + 20;
+
+        particle.style.height = height + 'px';
+    } else {
+        particle.classList.add('letter');
+
+        particle.innerText =
+            letters.charAt(Math.floor(Math.random() * letters.length));
+
+        particle.style.fontSize =
+            (Math.random() * 1.2 + 0.8) + 'rem';
+    }
+
+    particle.style.left = Math.random() * 220 + 'vw';
+
+    // Random speeds
+    const duration = Math.random() * 10 + 6;
+    particle.style.animationDuration = duration + 's';
+
+    // Random delays
+    particle.style.animationDelay = Math.random() * 8 + 's';
+
+    // Random opacity
+    particle.style.opacity = Math.random() * 0.7 + 0.2;
+
+    container.appendChild(particle);
+}
+
+        for (let i = 0; i < particleCount; i++) {
+            createParticle();
+        }
+    </script>
+</body>
+</html>
